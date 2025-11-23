@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext(null);
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+// Remove trailing slash to avoid double slashes in API calls
+const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || "http://localhost:3000").replace(/\/$/, '');
 
 /*
  * This provider should export a `user` context state that is 
@@ -82,11 +83,12 @@ export const AuthProvider = ({ children }) => {
                 body: JSON.stringify({ username, password })
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
+                const data = await response.json().catch(() => ({ message: 'Login failed' }));
                 return data.message || 'Login failed';
             }
+
+            const data = await response.json();
 
             // Store token in localStorage
             localStorage.setItem('token', data.token);
@@ -129,9 +131,8 @@ export const AuthProvider = ({ children }) => {
                 body: JSON.stringify(userData)
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
+                const data = await response.json().catch(() => ({ message: 'Registration failed' }));
                 return data.message || 'Registration failed';
             }
 
